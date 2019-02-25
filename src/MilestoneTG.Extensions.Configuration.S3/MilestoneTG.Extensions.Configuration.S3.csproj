@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Title>.NET Configuration Extensions for AWS S3</Title>
     <Description>.NET Configuration Extensions for loading configuration files from AWS S3.</Description>
     <PackageTags>AWS;Amazon;aws-sdk-v3;S3;configuration</PackageTags>
     <Company>Milestone Technology Group, LLC.</Company>
     <Authors>jpenniman</Authors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageProjectUrl>https://github.com/milestonetg/extensions-configuration-s3</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +17,7 @@
     <PackageReference Include="AWSSDK.S3" Version="3.3.31.19" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
 </Project>

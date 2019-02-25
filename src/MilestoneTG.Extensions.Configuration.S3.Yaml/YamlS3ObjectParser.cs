@@ -7,12 +7,14 @@ using YamlDotNet.RepresentationModel;
 
 namespace MilestoneTG.Extensions.Configuration.S3.Yaml
 {
+    ///<inheritdoc />
     public class YamlS3ObjectParser : S3ObjectParser
     {
         private readonly IDictionary<string, string> _data = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly Stack<string> _context = new Stack<string>();
         private string _currentPath;
-        
+
+        ///<inheritdoc />
         public override IDictionary<string, string> ParseAsync(Stream stream)
         {
             _data.Clear();

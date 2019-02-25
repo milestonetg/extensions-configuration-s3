@@ -14,7 +14,7 @@ namespace MilestoneTG.Extensions.Configuration.S3
         /// Parses the given S3 <see cref="GetObjectResponse"/>.
         /// </summary>
         /// <param name="s3Response">An <see cref="Amazon.S3.Model.GetObjectResponse"/></param>
-        /// <returns>A <see cref="IDictionary<string, string>"/> to be consumed by the ConfigurationRoot.</returns>
+        /// <returns>A IDictionary&lt;string, string&gt; to be consumed by the ConfigurationRoot.</returns>
         Task<IDictionary<string, string>> ParseAsync(GetObjectResponse s3Response);
     }
 }

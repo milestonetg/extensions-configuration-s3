@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace MilestoneTG.Extensions.Configuration.S3.Json
 {
+    ///<inheritdoc />
     public class JsonS3ObjectParser : S3ObjectParser
     {
         private readonly IDictionary<string, string> _data = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -16,7 +17,8 @@ namespace MilestoneTG.Extensions.Configuration.S3.Json
         private string _currentPath;
 
         private JsonTextReader _reader;
-        
+
+        ///<inheritdoc />
         public override IDictionary<string, string> ParseAsync(Stream stream)
         {
             _data.Clear();
