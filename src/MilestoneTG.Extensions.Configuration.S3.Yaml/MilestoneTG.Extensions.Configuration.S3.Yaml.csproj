@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.0.0</Version>
+    <Title>.NET Configuration Extensions for AWS S3</Title>
+    <Description>.NET Configuration Extensions for loading YAML configuration files from AWS S3.</Description>
+    <PackageTags>AWS;Amazon;aws-sdk-v3;S3;configuration;yaml</PackageTags>
+    <Company>Milestone Technology Group, LLC.</Company>
+    <Authors>jpenniman</Authors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="5.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MilestoneTG.Extensions.Configuration.S3\MilestoneTG.Extensions.Configuration.S3.csproj" />
+  </ItemGroup>
+
+</Project>
