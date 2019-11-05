@@ -1,9 +1,8 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Primitives;
 using System;
-using System.Threading;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MilestoneTG.Extensions.Configuration.S3
@@ -13,46 +12,55 @@ namespace MilestoneTG.Extensions.Configuration.S3
     /// </summary>
     public class S3ConfigurationProvider : ConfigurationProvider
     {
-        readonly S3ConfigurationSource source;
-        readonly IAmazonS3 s3;
+        private readonly IS3ProviderConfiguration config;
+        private readonly IAmazonS3 s3client;
+        private readonly IS3ObjectParser parser;
+        private readonly IReloadTrigger reloadTrigger;
 
-        readonly ManualResetEvent reloadTaskEvent = new ManualResetEvent(true);
+        private string previousEtag;
 
         /// <summary>
         /// Initialized a new <see cref="S3ConfigurationProvider"/> using the given <see cref="S3ConfigurationSource"/>.
         /// </summary>
-        /// <param name="source">The instance of <see cref="S3ConfigurationSource"/> to use for this provider instance.</param>
-        public S3ConfigurationProvider(S3ConfigurationSource source)
+        /// <param name="config">An implementation of <see cref="IS3ProviderConfiguration"/> that provides configuration.</param>
+        /// <param name="s3client">An Amazon S3 client.</param>
+        /// <param name="parser">The parser that will convert the S3 object to <see cref="Dictionary{TKey, TValue}"/> (where TKey and TValue are strings)</param>
+        /// <param name="reloadTrigger">A trigger that will initiate the automatic reloading process.</param>
+        public S3ConfigurationProvider(IS3ProviderConfiguration config, IAmazonS3 s3client, IS3ObjectParser parser, IReloadTrigger reloadTrigger)
         {
-            this.source = source ?? throw new ArgumentNullException(nameof(source));
-            if (source.AwsOptions == null) throw new ArgumentNullException(nameof(source.AwsOptions));
-            if (source.BucketName == null) throw new ArgumentNullException(nameof(source.BucketName));
-            if (source.Key == null) throw new ArgumentNullException(nameof(source.Key));
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
 
-            s3 = source.AwsOptions.CreateServiceClient<IAmazonS3>();
+            if (config.BucketName == null)
+                throw new ArgumentException($"{nameof(S3ConfigurationSource.BucketName)} cannot be null.", nameof(config));
 
-            if (source.ReloadAfter != null)
-            {
-                ChangeToken.OnChange(() =>
-                {
-                    var cancellationTokenSource = new CancellationTokenSource(source.ReloadAfter.Value);
-                    var cancellationChangeToken = new CancellationChangeToken(cancellationTokenSource.Token);
-                    return cancellationChangeToken;
-                }, () =>
-                {
-                    reloadTaskEvent.Reset();
-                    try
-                    {
-                        Load(true);
-                    }
-                    finally
-                    {
-                        reloadTaskEvent.Set();
-                    }
-                });
-            }
+            if (config.Key == null)
+                throw new ArgumentException($"{nameof(S3ConfigurationSource.Key)} cannot be null.", nameof(config));
+            
+            this.s3client = s3client;
+            this.parser = parser;
+            this.reloadTrigger = reloadTrigger;
+
+            if (this.reloadTrigger != null)
+                this.reloadTrigger.Triggered += OnReloadTriggered;
         }
 
+        /// <summary>
+        /// Initialized a new <see cref="S3ConfigurationProvider"/> using the given <see cref="S3ConfigurationSource"/>. Using this overload will not perform automatic reloading.
+        /// </summary>
+        /// <param name="source">An implementation of <see cref="IS3ProviderConfiguration"/> that provides configuration.</param>
+        /// <param name="s3client">A factory that can be used to create Amazon S3 clients.</param>
+        /// <param name="parser">The parser that will convert the S3 object to <see cref="Dictionary{TKey, TValue}"/> (where TKey and TValue are strings)</param>
+        public S3ConfigurationProvider(IS3ProviderConfiguration source, IAmazonS3 s3client, IS3ObjectParser parser)
+            : this(source, s3client, parser, null)
+        {
+
+        }
+
+        private void OnReloadTriggered(object sender, EventArgs e)
+        {
+            Load(true);
+        }
+        
         /// <summary>
         /// If this configuration provider is currently performing a reload of the config data this method will block until
         /// the reload is called.
@@ -62,30 +70,38 @@ namespace MilestoneTG.Extensions.Configuration.S3
         /// </summary>
         public void WaitForReloadToComplete(TimeSpan timeout)
         {
-            reloadTaskEvent.WaitOne(timeout);
+            this.reloadTrigger.BlockThreadUntilTriggered(timeout);
         }
 
         /// <summary>
-        ///  Loads (or reloads) the data for this provider.
+        /// Loads (or reloads) the data for this provider.
         /// </summary>
         public override void Load() => Load(false);
-
+        
         private void Load(bool reload) => LoadAsync(reload).ConfigureAwait(false).GetAwaiter().GetResult();
-
+        
         private async Task LoadAsync(bool reload)
         {
             try
             {
-                using (GetObjectResponse s3Response = await s3.GetObjectAsync(source.BucketName, source.Key).ConfigureAwait(false))
+                GetObjectRequest request = new GetObjectRequest()
                 {
-                    Data = await source.Parser.ParseAsync(s3Response).ConfigureAwait(false);
-                }
+                    BucketName = config.BucketName,
+                    Key = config.Key,
+                    EtagToNotMatch = previousEtag
+                };
 
+                using (GetObjectResponse s3Response = await s3client.GetObjectAsync(request).ConfigureAwait(false))
+                {
+                    Data = await parser.ParseAsync(s3Response).ConfigureAwait(false);
+                    this.previousEtag = s3Response.ETag;
+                }
+                
                 OnReload();
             }
-            catch(Exception)
+            catch (Exception)
             {
-                if (source.Optional || reload)
+                if (config.Optional || reload)
                     return;
 
                 throw;
