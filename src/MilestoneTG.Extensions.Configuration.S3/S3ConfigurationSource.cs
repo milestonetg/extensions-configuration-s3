@@ -1,4 +1,5 @@
 ﻿using Amazon.Extensions.NETCore.Setup;
+using Amazon.S3;
 using Microsoft.Extensions.Configuration;
 using System;
 
@@ -7,7 +8,7 @@ namespace MilestoneTG.Extensions.Configuration.S3
     /// <summary>
     /// Defines a configuration source for retrieving configuration files from AWS S3.
     /// </summary>
-    public class S3ConfigurationSource : IConfigurationSource
+    public class S3ConfigurationSource : IConfigurationSource, IS3ProviderConfiguration
     {
         /// <summary>
         /// <see cref="AWSOptions"/> used to create an AWS S3 Client />.
@@ -46,7 +47,31 @@ namespace MilestoneTG.Extensions.Configuration.S3
         /// <returns>An <see cref="IConfigurationProvider"/>.</returns>
         public IConfigurationProvider Build(IConfigurationBuilder builder)
         {
-            return new S3ConfigurationProvider(this);
+            SelfValidation();
+            return CreateProvider();
+        }
+
+        private void SelfValidation()
+        {
+            if (AwsOptions == null)
+                throw new InvalidOperationException($"{nameof(AwsOptions)} must be set in order to create {nameof(S3ConfigurationProvider)}.");
+
+            if (Parser == null)
+                throw new InvalidOperationException($"{nameof(Parser)} must be set in order to create {nameof(S3ConfigurationProvider)}.");
+        }
+
+        private IConfigurationProvider CreateProvider()
+        {
+            ConfigurationProvider result = null;
+
+            IAmazonS3 s3client = AwsOptions.CreateServiceClient<IAmazonS3>();
+
+            if (ReloadAfter.HasValue)
+                result = new S3ConfigurationProvider(this, s3client, Parser, new ReloadTrigger(ReloadAfter.Value));
+            else
+                result = new S3ConfigurationProvider(this, s3client, Parser);
+
+            return result;
         }
     }
 }
