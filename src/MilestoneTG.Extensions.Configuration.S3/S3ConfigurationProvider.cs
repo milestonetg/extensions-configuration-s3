@@ -18,6 +18,8 @@ namespace MilestoneTG.Extensions.Configuration.S3
 
         readonly ManualResetEvent reloadTaskEvent = new ManualResetEvent(true);
 
+        string previousEtag = string.Empty;
+
         /// <summary>
         /// Initialized a new <see cref="S3ConfigurationProvider"/> using the given <see cref="S3ConfigurationSource"/>.
         /// </summary>
@@ -76,12 +78,24 @@ namespace MilestoneTG.Extensions.Configuration.S3
         {
             try
             {
+                GetObjectRequest request = new GetObjectRequest()
+                { 
+                    BucketName = source.BucketName,
+                    Key = source.Key,
+                    EtagToNotMatch = previousEtag
+                };
+
+
                 using (GetObjectResponse s3Response = await s3.GetObjectAsync(source.BucketName, source.Key).ConfigureAwait(false))
                 {
-                    Data = await source.Parser.ParseAsync(s3Response).ConfigureAwait(false);
+                    if (s3Response.ContentLength > 0)
+                    {
+                        Data = await source.Parser.ParseAsync(s3Response).ConfigureAwait(false);
+                        previousEtag = s3Response.ETag;
+                        OnReload();
+                    }
                 }
 
-                OnReload();
             }
             catch(Exception)
             {
