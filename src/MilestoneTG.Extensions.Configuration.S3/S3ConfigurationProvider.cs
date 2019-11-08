@@ -78,27 +78,37 @@ namespace MilestoneTG.Extensions.Configuration.S3
         {
             try
             {
-                GetObjectRequest request = new GetObjectRequest()
-                { 
-                    BucketName = source.BucketName,
-                    Key = source.Key,
-                    EtagToNotMatch = previousEtag
-                };
-
-
-                using (GetObjectResponse s3Response = await s3.GetObjectAsync(source.BucketName, source.Key).ConfigureAwait(false))
+                // Despite this thread: https://forums.aws.amazon.com/thread.jspa?threadID=77995&tstart=0
+                // GetObjectAsync(...) still throws and AmazonS3Exception when ETags do not match.
+                // Since a config change is the exception to the rule, and throwing exceptions is expensive, 
+                // we'll get the metadata and check the etag manually first before getting the entire object.
+                // This will increase performance of the config checks, since we won't download the entire object 
+                // every time only to disgard it. Only checking on reload ensures that the inital load doesn't take 
+                // the double hit.
+                if (reload)
                 {
-                    if (s3Response.ContentLength > 0)
+                    GetObjectMetadataResponse metadata = await s3.GetObjectMetadataAsync(source.BucketName, source.Key).ConfigureAwait(false);
+
+                    // If the Etag is the same, don't bother downloading, deserializing, and notifying the config system.
+                    if (metadata.ETag == previousEtag)
                     {
-                        Data = await source.Parser.ParseAsync(s3Response).ConfigureAwait(false);
-                        previousEtag = s3Response.ETag;
-                        OnReload();
+                        return;
                     }
                 }
+                
+                // We are certain there is new config...
+                using (GetObjectResponse s3Response = await s3.GetObjectAsync(source.BucketName, source.Key).ConfigureAwait(false))
+                {
+                        Data = await source.Parser.ParseAsync(s3Response).ConfigureAwait(false);
+                        previousEtag = s3Response.ETag;
+                }
 
+                // Notify the configuration system of the change...
+                OnReload();
             }
-            catch(Exception)
+            catch (Exception)
             {
+                // if the config is optional or we are on a reload, we don't care...
                 if (source.Optional || reload)
                     return;
 

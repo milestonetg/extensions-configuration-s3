@@ -21,7 +21,7 @@ namespace Example
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration(builder => {
-                    builder.AddJsonS3Object("jpenniman", "mySettings.json");
+                    builder.AddJsonS3Object("mtg-test-config", "mySettings.json", reloadAfter: TimeSpan.FromSeconds(10));
                 })
                 .UseStartup<Startup>();
     }
