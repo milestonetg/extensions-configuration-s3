@@ -23,16 +23,16 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore
-      run: dotnet restore MilestoneTG.Extensions.Configuration.S3.slnx
+      run: dotnet restore
 
     - name: Audit
-      run: dotnet list package MilestoneTG.Extensions.Configuration.S3.slnx --vulnerable --include-transitive
+      run: dotnet list package --vulnerable --include-transitive
 
     - name: Build
-      run: dotnet build MilestoneTG.Extensions.Configuration.S3.slnx --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test MilestoneTG.Extensions.Configuration.S3.slnx --configuration Release --no-build
+      run: dotnet test --configuration Release --no-build
 
   pack:
     needs: build
@@ -49,10 +49,10 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore
-      run: dotnet restore MilestoneTG.Extensions.Configuration.S3.slnx
+      run: dotnet restore
 
     - name: Build
-      run: dotnet build MilestoneTG.Extensions.Configuration.S3.slnx --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore
 
     - name: Pack
       run: |
