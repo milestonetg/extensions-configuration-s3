@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MilestoneTG.Extensions.Configuration.S3.Json\MilestoneTG.Extensions.Configuration.S3.Json.csproj" />
+    <ProjectReference Include="..\..\src\MilestoneTG.Extensions.Configuration.S3.Json\MilestoneTG.Extensions.Configuration.S3.Json.csproj" />
   </ItemGroup>
 
 </Project>

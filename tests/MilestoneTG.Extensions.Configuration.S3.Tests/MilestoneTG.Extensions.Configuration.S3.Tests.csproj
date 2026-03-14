@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>MilestoneTG.Extensions.Configuration.S3.Tests</RootNamespace>
+        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="Microsoft.Testing.Platform" />
+        <PackageReference Include="Shouldly" />
+        <PackageReference Include="Testcontainers" />
+        <PackageReference Include="Testcontainers.LocalStack" />
+        <PackageReference Include="xunit.v3.mtp-v2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\MilestoneTG.Extensions.Configuration.S3.Json\MilestoneTG.Extensions.Configuration.S3.Json.csproj" />
+      <ProjectReference Include="..\..\src\MilestoneTG.Extensions.Configuration.S3.Yaml\MilestoneTG.Extensions.Configuration.S3.Yaml.csproj" />
+      <ProjectReference Include="..\..\src\MilestoneTG.Extensions.Configuration.S3\MilestoneTG.Extensions.Configuration.S3.csproj" />
+    </ItemGroup>
+
+</Project>
