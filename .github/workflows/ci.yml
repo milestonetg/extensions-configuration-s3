@@ -1,0 +1,84 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Audit
+      run: dotnet list package --vulnerable --include-transitive
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --configuration Release --no-build
+
+  pack:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Pack
+      run: |
+        dotnet pack src/MilestoneTG.Extensions.Configuration.S3/MilestoneTG.Extensions.Configuration.S3.csproj --configuration Release --no-build -p:PackageOutputPath=${{ github.workspace }}/artifacts
+        dotnet pack src/MilestoneTG.Extensions.Configuration.S3.Json/MilestoneTG.Extensions.Configuration.S3.Json.csproj --configuration Release --no-build -p:PackageOutputPath=${{ github.workspace }}/artifacts
+        dotnet pack src/MilestoneTG.Extensions.Configuration.S3.Yaml/MilestoneTG.Extensions.Configuration.S3.Yaml.csproj --configuration Release --no-build -p:PackageOutputPath=${{ github.workspace }}/artifacts
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-packages
+        path: artifacts/*.nupkg
+
+  deploy:
+    needs: pack
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: nuget-packages
+        path: artifacts
+
+    - name: Push to NuGet
+      run: dotnet nuget push artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_API_KEY }}
