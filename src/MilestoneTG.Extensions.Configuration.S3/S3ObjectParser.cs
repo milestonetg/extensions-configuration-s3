@@ -1,7 +1,8 @@
-﻿using Amazon.S3.Model;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+
+using Amazon.S3.Model;
 
 namespace MilestoneTG.Extensions.Configuration.S3
 {

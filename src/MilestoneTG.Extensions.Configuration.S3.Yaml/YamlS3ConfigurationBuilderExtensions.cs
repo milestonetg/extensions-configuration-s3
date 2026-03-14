@@ -1,6 +1,8 @@
-﻿using Amazon.Extensions.NETCore.Setup;
+﻿using System;
+
+using Amazon.Extensions.NETCore.Setup;
+
 using Microsoft.Extensions.Configuration;
-using System;
 
 namespace MilestoneTG.Extensions.Configuration.S3.Yaml
 {
