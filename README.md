@@ -100,7 +100,7 @@ In AWS Lambda, background tasks are paused after processing a Lambda event.  Thi
 retrieving the latest configuration data from S3. To ensure the reload is performed within a Lambda event,
 we recommend calling the extension method `WaitForS3ReloadToComplete` from the `IConfiguration` object in 
 your Lambda function. This method will immediately return unless a reload is currently being performed.  
-The `WaitForS3ReloadToComplete` extension method to `IConfiguration` is available when you add the a
+The `WaitForS3ReloadToComplete` extension method to `IConfiguration` is available when you add the
 `using MilestoneTG.Extensions.Configuration.S3` statement.  See the example below:
 
 
