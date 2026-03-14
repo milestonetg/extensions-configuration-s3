@@ -27,8 +27,13 @@ public class LocalStackFixture : IAsyncLifetime, IDisposable
     {
         await _container.StartAsync();
 
-        var baseUri = _container.GetConnectionString();
-        S3Uri = baseUri.Replace("127.0.0.1", "s3.localhost");
+        var baseUri = new Uri(_container.GetConnectionString());
+        var s3UriBuilder = new UriBuilder(baseUri)
+        {
+            Host = "s3.localhost"
+        };
+
+        S3Uri = s3UriBuilder.Uri.ToString();
     }
 }
 
