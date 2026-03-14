@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
+using Microsoft.Extensions.Configuration;
+
 using YamlDotNet.RepresentationModel;
 
 namespace MilestoneTG.Extensions.Configuration.S3.Yaml

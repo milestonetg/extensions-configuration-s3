@@ -1,10 +1,12 @@
-﻿using Amazon.S3;
-using Amazon.S3.Model;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Primitives;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Amazon.S3;
+using Amazon.S3.Model;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Primitives;
 
 namespace MilestoneTG.Extensions.Configuration.S3
 {
@@ -95,12 +97,12 @@ namespace MilestoneTG.Extensions.Configuration.S3
                         return;
                     }
                 }
-                
+
                 // We are certain there is new config...
                 using (GetObjectResponse s3Response = await s3.GetObjectAsync(source.BucketName, source.Key).ConfigureAwait(false))
                 {
-                        Data = await source.Parser.ParseAsync(s3Response).ConfigureAwait(false);
-                        previousEtag = s3Response.ETag;
+                    Data = await source.Parser.ParseAsync(s3Response).ConfigureAwait(false);
+                    previousEtag = s3Response.ETag;
                 }
 
                 // Notify the configuration system of the change...
