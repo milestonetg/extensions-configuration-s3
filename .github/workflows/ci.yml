@@ -26,7 +26,7 @@ jobs:
       run: dotnet restore MilestoneTG.Extensions.Configuration.S3.slnx
 
     - name: Audit
-      run: dotnet list packages --vulnerable --include-transitive MilestoneTG.Extensions.Configuration.S3.slnx
+      run: dotnet list package --vulnerable --include-transitive MilestoneTG.Extensions.Configuration.S3.slnx
 
     - name: Build
       run: dotnet build MilestoneTG.Extensions.Configuration.S3.slnx --configuration Release --no-restore
