@@ -2,7 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path="src/mySettings.json" />
   </Folder>
-  <Project Path="src/Example/Example.csproj" />
+  <Project Path="samples/Example/Example.csproj" />
   <Project Path="src/MilestoneTG.Extensions.Configuration.S3.Json/MilestoneTG.Extensions.Configuration.S3.Json.csproj" />
   <Project Path="src/MilestoneTG.Extensions.Configuration.S3.Yaml/MilestoneTG.Extensions.Configuration.S3.Yaml.csproj" />
   <Project Path="src/MilestoneTG.Extensions.Configuration.S3/MilestoneTG.Extensions.Configuration.S3.csproj" />
